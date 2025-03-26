@@ -16,17 +16,17 @@ For each contract listed in the state diff, please verify that no contracts or s
 >
 > ### CB Signers
 >
-> - Domain Hash: `0x88aac3dc27cc1618ec43a87b3df21482acd24d172027ba3fbb5a5e625d895a0b`
-> - Message Hash: `0x9ef8cce91c002602265fd0d330b1295dc002966e87cd9dc90e2a76efef2517dc`
+> - Domain Hash: _needs to be derived_
+> - Message Hash: _needs to be derived_
 >
 > ### OP Signers
 >
-> - Domain Hash: `0x4e6a6554de0308f5ece8ff736beed8a1b876d16f5c27cac8e466d7de0c703890`
-> - Message Hash: `0xc7991c24a74ab490b5fc16fb1ed3b21d1b2feea08a1caa0cf35e2da0be256303`
+> - Domain Hash: _needs to be derived_
+> - Message Hash: _needs to be derived_
 
 ## Expected Nested Hash
 
-`0x327dcf25f029c9623dbd799635f384b0c63acfcdeb2bded32fde3ebc6c878f0d`
+_needs to be derived_
 
 ## Mainnet State Overrides
 
@@ -68,7 +68,7 @@ For each contract listed in the state diff, please verify that no contracts or s
 
 #### For CB Signers
 
-- **Key**: `0x8cb5f50dcfb02589430ed0b4a4f27b2874c87b778dee6e2a74b223075947171c` <br/>
+- **Key**: _needs to be derived_ <br/>
   **Before**: `0x0000000000000000000000000000000000000000000000000000000000000000` <br/>
   **After**: `0x0000000000000000000000000000000000000000000000000000000000000001` <br/>
   **Meaning**: Sets an approval for this transaction from the signer.
@@ -76,7 +76,7 @@ For each contract listed in the state diff, please verify that no contracts or s
 
 #### For OP Signers
 
-- **Key**: `0xf248e3d2bff4db2695f9a01b649a5d616c363e8f02c966a13778d0c4e7047c67` <br/>
+- **Key**: _needs to be derived_ <br/>
   **Before**: `0x0000000000000000000000000000000000000000000000000000000000000000` <br/>
   **After**: `0x0000000000000000000000000000000000000000000000000000000000000001` <br/>
   **Meaning**: Sets an approval for this transaction from the signer.
@@ -86,14 +86,14 @@ For each contract listed in the state diff, please verify that no contracts or s
 
 - **Key**: `0x4d5a9bd2e41301728d41c8e705190becb4e74abe869f75bdb405b63716a35f9e` <br/>
   **Before**: `0x000000000000000000000000f62c15e2f99d4869a925b8f57076cd85335832a2` <br/>
-  **After**: `0x0000000000000000000000008cf5972cedf63b099406b3e7da81566885453d8e` <br/>
-  **Meaning**: Updates the `PermissionedDisputeGame` implementation address from `0xF62c15e2F99d4869A925B8F57076cD85335832A2` to `0x8cf5972cedf63b099406b3e7da81566885453d8e`.
+  **After**: Newly deployed `PermissionedDisputeGame` <br/>
+  **Meaning**: Updates the `PermissionedDisputeGame` implementation address from `0xF62c15e2F99d4869A925B8F57076cD85335832A2` to newly deployed `PermissionedDisputeGame`.
   **Verify**: You can verify the key derivation by running `cast index uint32 1 101` in your terminal.
 
 - **Key**: `0xffdfc1249c027f9191656349feb0761381bb32c9f557e01f419fd08754bf5a1b` <br/>
   **Before**: `0x000000000000000000000000c5f3677c3c56db4031ab005a3c9c98e1b79d438e` <br/>
-  **After**: `0x000000000000000000000000fe884b822eddb5864e86626e088120c73c0a4364` <br/>
-  **Meaning**: Updates the `FaultDisputeGame` implementation address from `0xc5f3677c3C56DB4031ab005a3C9c98e1B79D438e` to `0xfe884b822eddb5864e86626e088120c73c0a4364`.
+  **After**: Newly deployed `FaultDisputeGame` <br/>
+  **Meaning**: Updates the `FaultDisputeGame` implementation address from `0xc5f3677c3C56DB4031ab005a3C9c98e1B79D438e` to newly deployed `FaultDisputeGame`.
   **Verify**: You can verify the key derivation by running `cast index uint32 0 101` in your terminal.
 
 ### Nested Safe
