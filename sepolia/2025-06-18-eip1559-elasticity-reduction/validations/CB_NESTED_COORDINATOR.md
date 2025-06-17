@@ -73,7 +73,7 @@ For each contract listed in the state diff, please verify that no contracts or s
    **Value Type**: uint256 <br/>
    **Decoded Old Value**: `0` <br/>
    **Decoded New Value**: `1` <br/>
-   **Meaning**: Sets `approvedHashes[0x646132a1667ca7ad00d36616afba1a28116c770a][0xa6c9313de83c063ff4e940cea082f3527ff3e92e8727fbfcfefb654509dabd08]` to `1`. <br/>
+   **Meaning**: Sets `approvedHashes[0x646132a1667ca7ad00d36616afba1a28116c770a][0xf9305e8c9fa5c8950e42f31f4d6a857734a7093d161a4d925d4de6fd4927126b]` to `1`. <br/>
 
 ### CB Nested - Sepolia(`0x5dfEB066334B67355A15dc9b67317fD2a2e1f77f`)
 
@@ -101,7 +101,7 @@ For each contract listed in the state diff, please verify that no contracts or s
    **Value Type**: uint256 <br/>
    **Decoded Old Value**: `0` <br/>
    **Decoded New Value**: `1` <br/>
-   **Meaning**: Sets `approvedHashes[0x5dfeb066334b67355a15dc9b67317fd2a2e1f77f][0xb0a1aaf50a97a55b80f041736fc17bf69547d5c06cadca7ea62da4a3966548be]` to `1`. <br/>
+   **Meaning**: Sets `approvedHashes[0x5dfeb066334b67355a15dc9b67317fd2a2e1f77f][0x44a463f3e5253d8d2eb81f2d833cb99de9f8836f015c8f28a6cbf4063cb82b2c]` to `1`. <br/>
 
 ### System Config - Sepolia (`0xf272670eb55e895584501d564AfEB048bEd26194`)
 

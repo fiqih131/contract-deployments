@@ -63,7 +63,7 @@ For each contract listed in the state diff, please verify that no contracts or s
    **Value Type**: uint256 <br/>
    **Decoded Old Value**: `0` <br/>
    **Decoded New Value**: `1` <br/>
-   **Meaning**: Sets `approvedHashes[0x6af0674791925f767060dd52f7fb20984e8639d8][0xa6c9313de83c063ff4e940cea082f3527ff3e92e8727fbfcfefb654509dabd08]` to `1`. <br/>
+   **Meaning**: Sets `approvedHashes[0x6af0674791925f767060dd52f7fb20984e8639d8][0xf9305e8c9fa5c8950e42f31f4d6a857734a7093d161a4d925d4de6fd4927126b]` to `1`. <br/>
 
 ### Mock OP Nested - Sepolia (`0x6AF0674791925f767060Dd52f7fB20984E8639d8`)
 
