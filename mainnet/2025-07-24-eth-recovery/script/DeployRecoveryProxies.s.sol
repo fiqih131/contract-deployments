@@ -6,35 +6,32 @@ import {Script, console} from "forge-std/Script.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
+// TODO: Import from base/contracts once https://github.com/base/contracts/pull/152 is merged.
 import {Recovery} from "../src/Recovery.sol";
 
 contract DeployRecoveryProxies is Script {
-    address internal INCIDENT_MULTISIG = vm.envAddress("INCIDENT_MULTISIG");
-
-    address internal recoveryImplementation;
-
-    address[6] internal expectedProxyAddresses = [
-        0x0475cBCAebd9CE8AfA5025828d5b98DFb67E059E,
-        0x8EfB6B5c4767B09Dc9AA6Af4eAA89F749522BaE2,
-        0x3154Cf16ccdb4C6d922629664174b904d80F2C35,
-        0x56315b90c40730925ec5485cf004d835058518A0,
-        0x866E82a600A1414e583f7F13623F1aC5d58b0Afa,
-        0x49048044D57e1C92A77f79988d21Fa8fAF74E97e
-    ];
+    address internal INCIDENT_MULTISIG;
+    address internal RECOVERY_IMPLEMENTATION;
+    address[6] internal EXPECTED_PROXY_ADDRESSES;
 
     address[6] internal actualProxyAddresses;
 
     function setUp() public {
-        string memory root = vm.projectRoot();
-        string memory path = string.concat(root, "/addresses.json");
-        string memory json = vm.readFile(path);
-        recoveryImplementation = vm.parseJsonAddress(json, ".implementation");
+        INCIDENT_MULTISIG = vm.envAddress("INCIDENT_MULTISIG");
+        RECOVERY_IMPLEMENTATION = vm.envAddress("RECOVERY_IMPLEMENTATION");
+
+        string memory proxyAddressList = vm.envString("EXPECTED_PROXY_ADDRESSES");
+        string[] memory addressStrings = vm.split(proxyAddressList, ",");
+        require(addressStrings.length == 6, "Must provide exactly 6 proxy addresses");
+        for (uint256 i; i < 6; i++) {
+            EXPECTED_PROXY_ADDRESSES[i] = vm.parseAddress(addressStrings[i]);
+        }
     }
 
     function run() public {
         vm.startBroadcast();
-        for (uint256 i; i < expectedProxyAddresses.length; i++) {
-            address proxy = address(new ERC1967Proxy({_logic: recoveryImplementation, _data: ""}));
+        for (uint256 i; i < EXPECTED_PROXY_ADDRESSES.length; i++) {
+            address proxy = address(new ERC1967Proxy({_logic: RECOVERY_IMPLEMENTATION, _data: ""}));
             actualProxyAddresses[i] = proxy;
             console.log("Recovery proxy deployed at: ", proxy);
         }
@@ -45,20 +42,20 @@ contract DeployRecoveryProxies is Script {
 
     function _postCheck() internal {
         // Check that the proxies are deployed to the expected addresses
-        for (uint256 i; i < expectedProxyAddresses.length; i++) {
-            require(actualProxyAddresses[i] == expectedProxyAddresses[i], "Incorrect proxy address");
+        for (uint256 i; i < EXPECTED_PROXY_ADDRESSES.length; i++) {
+            require(actualProxyAddresses[i] == EXPECTED_PROXY_ADDRESSES[i], "Incorrect proxy address");
         }
 
         // Check that the proxies owners are the expected addresses
-        for (uint256 i; i < expectedProxyAddresses.length; i++) {
+        for (uint256 i; i < EXPECTED_PROXY_ADDRESSES.length; i++) {
             Recovery proxy = Recovery(actualProxyAddresses[i]);
             require(proxy.OWNER() == INCIDENT_MULTISIG, "Incorrect proxy owner");
         }
 
         // Check that the proxies are upgradable
-        for (uint256 i; i < expectedProxyAddresses.length; i++) {
+        for (uint256 i; i < EXPECTED_PROXY_ADDRESSES.length; i++) {
             vm.prank(INCIDENT_MULTISIG);
-            UUPSUpgradeable(actualProxyAddresses[i]).upgradeTo(recoveryImplementation);
+            UUPSUpgradeable(actualProxyAddresses[i]).upgradeTo(RECOVERY_IMPLEMENTATION);
         }
     }
 }

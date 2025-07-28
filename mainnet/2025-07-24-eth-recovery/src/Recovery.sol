@@ -3,6 +3,7 @@ pragma solidity 0.8.15;
 
 import {UUPSUpgradeable} from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
+// TODO: Remove this once https://github.com/base/contracts/pull/152 is merged.
 contract Recovery is UUPSUpgradeable {
     /// @dev The address of the owner.
     address public immutable OWNER;
