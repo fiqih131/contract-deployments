@@ -6,8 +6,7 @@ import {Script, console} from "forge-std/Script.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
-// TODO: Import from base/contracts once https://github.com/base/contracts/pull/152 is merged.
-import {Recovery} from "../src/Recovery.sol";
+import {Recovery} from "@base-contracts/src/recovery/Recovery.sol";
 
 contract DeployRecoveryProxies is Script {
     address internal INCIDENT_MULTISIG;

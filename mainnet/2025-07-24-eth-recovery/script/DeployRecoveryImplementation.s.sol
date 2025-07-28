@@ -3,7 +3,7 @@ pragma solidity 0.8.15;
 
 import {Script, console} from "forge-std/Script.sol";
 
-import {Recovery} from "../src/Recovery.sol";
+import {Recovery} from "@base-contracts/src/recovery/Recovery.sol";
 
 contract DeployRecoveryImplementation is Script {
     address internal INCIDENT_MULTISIG;
