@@ -8,11 +8,11 @@ import {Recovery} from "@base-contracts/src/recovery/Recovery.sol";
 contract DeployRecoveryImplementation is Script {
     address internal INCIDENT_MULTISIG;
 
+    Recovery recoveryImpl;
+
     function setUp() public {
         INCIDENT_MULTISIG = vm.envAddress("INCIDENT_MULTISIG");
     }
-
-    Recovery recoveryImpl;
 
     function run() public {
         vm.startBroadcast();

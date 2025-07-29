@@ -40,19 +40,15 @@ contract DeployRecoveryProxies is Script {
     }
 
     function _postCheck() internal {
-        // Check that the proxies are deployed to the expected addresses
         for (uint256 i; i < EXPECTED_PROXY_ADDRESSES.length; i++) {
+            // Check that the proxies are deployed to the expected addresses
             require(actualProxyAddresses[i] == EXPECTED_PROXY_ADDRESSES[i], "Incorrect proxy address");
-        }
 
-        // Check that the proxies owners are the expected addresses
-        for (uint256 i; i < EXPECTED_PROXY_ADDRESSES.length; i++) {
+            // Check that the proxies owners are the expected addresses
             Recovery proxy = Recovery(actualProxyAddresses[i]);
             require(proxy.OWNER() == INCIDENT_MULTISIG, "Incorrect proxy owner");
-        }
 
-        // Check that the proxies are upgradable
-        for (uint256 i; i < EXPECTED_PROXY_ADDRESSES.length; i++) {
+            // Check that the proxies are upgradable
             vm.prank(INCIDENT_MULTISIG);
             UUPSUpgradeable(actualProxyAddresses[i]).upgradeTo(RECOVERY_IMPLEMENTATION);
         }
