@@ -12,10 +12,8 @@ deploy-implementation:
 		echo "Error: RPC_URL is required. Usage: make deploy-implementation RPC_URL=<url>"; \
 		exit 1; \
 	fi
-	$(GOPATH)/bin/eip712sign --ledger --hd-paths "m/44'/60'/$(LEDGER_ACCOUNT)'/0/0" -- \
 	forge script --rpc-url $(RPC_URL) DeployRecoveryImplementation \
-	--sig "run()" \
-	--broadcast
+		--ledger --hd-paths "m/44'/60'/$(LEDGER_ACCOUNT)'/0/0" --sig "run()" --broadcast
 
 .PHONY: dry-run-deployments
 dry-run-deployments:
@@ -23,6 +21,4 @@ dry-run-deployments:
 		echo "Error: RPC_URL is required. Usage: make dry-run-deployments RPC_URL=<url>"; \
 		exit 1; \
 	fi
-	forge script --rpc-url $(RPC_URL) DeployRecoveryProxies \
-	--sig "run()" \
-	--sender $(DEPLOYER)
+	forge script --rpc-url $(RPC_URL) DeployRecoveryProxies --sig "run()" --sender $(DEPLOYER)
