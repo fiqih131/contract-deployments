@@ -69,7 +69,7 @@ contract ArbitrumExecuteRecovery is MultisigScript {
             callData: abi.encodeCall(
                 IInbox.sendL1FundedContractTransaction,
                 (
-                    // gasprice were derived using latest gas prices from public gas trackers on arbitrum.
+                    // gasprice were obtained using latest gas prices from public gas trackers on arbitrum.
                     // the maxgas was then derived by asking "how much ETH are we willing to spend to refund users?"
                     // and 0.02 ETH seemed a reasonable worst case cost.
                     1000000000, // maxgas
