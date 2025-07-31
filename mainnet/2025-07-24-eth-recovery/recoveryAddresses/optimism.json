@@ -1,0 +1,23 @@
+{
+  "summary": {
+    "targetAddress": "0x49048044D57e1C92A77f79988d21Fa8fAF74E97e",
+    "chain": "Arbitrum One",
+    "chainId": 42161,
+    "category": "All",
+    "totalWallets": 596,
+    "totalEthReceived": "75.199207",
+    "generatedAt": "2025-07-22T04:00:56.846Z"
+  },
+  "addresses": [
+    {
+      "address": "0x2293014ca33b9d3db2bf2470c2f4ee3419f2c9c8",
+      "totalEth": "55",
+      "category": "UNKNOWN"
+    },
+    {
+      "address": "0x38fa73d4d40b714cf10f9df0f3b0b83cfb93e1f5",
+      "totalEth": "7",
+      "category": "UNKNOWN"
+    }
+  ]
+}
