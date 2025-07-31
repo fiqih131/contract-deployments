@@ -6,6 +6,10 @@ ifndef LEDGER_ACCOUNT
 override LEDGER_ACCOUNT = 0
 endif
 
+.PHONY: deps
+deps:
+	forge install --no-git github.com/OffchainLabs/nitro-contracts@v3.1.1
+
 .PHONY: deploy-implementation
 deploy-implementation:
 	@if [ -z "$(RPC_URL)" ]; then \

@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import {Script, console} from "forge-std/Script.sol";
+import {Script} from "forge-std/Script.sol";
 import {IMulticall3} from "forge-std/interfaces/IMulticall3.sol";
+import {Vm} from "forge-std/Vm.sol";
 import {MultisigScript} from "@base-contracts/script/universal/MultisigScript.sol";
 import {Recovery} from "@base-contracts/src/recovery/Recovery.sol";
-import {Vm} from "forge-std/Vm.sol";
 import {Simulation} from "@base-contracts/script/universal/Simulation.sol";
-import {IInbox} from "@aribtrum-classic/packages/arb-bridge-eth/contracts/bridge/interfaces/IInbox.sol";
+import {IInbox} from "nitro-contracts/bridge/IInbox.sol";
 
 struct AddressJsonRecoveryInfo {
     address refund_address;
@@ -15,23 +15,13 @@ struct AddressJsonRecoveryInfo {
     string total_eth;
 }
 
-struct AddressRecoveryInfo {
-    address refund_address;
-    string category;
-    uint256 total_eth;
-}
-
-interface IRecovery {
-    function withdrawETH(address[] calldata targets, uint256[] calldata amounts) external;
-}
-
 contract ArbitrumExecuteRecovery is MultisigScript {
     address internal immutable OWNER_SAFE = vm.envAddress("OWNER_SAFE");
-    address internal ARBITRUM_L1_DELAYED_INBOX = vm.envAddress("ARBITRUM_L1_DELAYED_INBOX");
-    address internal immutable L2_RECOVERY_IMPLEMENTATION = vm.envAddress("RECOVERY_IMPLEMENTATION");
+    address internal ARBITRUM_INBOX = vm.envAddress("ARBITRUM_INBOX");
+    address internal immutable L2_RECOVERY_PROXY = vm.envAddress("RECOVERY_PROXY");
 
-    AddressRecoveryInfo[] addressesToRefund;
-    mapping(address => uint256) originalBalances;
+    address[] public addresses;
+    uint256[] public amounts;
 
     function setUp() public {
         AddressJsonRecoveryInfo[] memory jsonAddressesToRefund;
@@ -41,44 +31,41 @@ contract ArbitrumExecuteRecovery is MultisigScript {
         bytes memory data = vm.parseJson(json, ".addresses");
         jsonAddressesToRefund = abi.decode(data, (AddressJsonRecoveryInfo[]));
 
-        for (uint256 i = 0; i < jsonAddressesToRefund.length; i = i + 1) {
-            AddressRecoveryInfo memory refundInfo = AddressRecoveryInfo(
-                jsonAddressesToRefund[i].refund_address,
-                jsonAddressesToRefund[i].category,
-                vm.parseUint(jsonAddressesToRefund[i].total_eth)
-            );
-            addressesToRefund.push(refundInfo);
-
-            originalBalances[jsonAddressesToRefund[i].refund_address] = jsonAddressesToRefund[i].refund_address.balance;
+        for (uint256 i; i < jsonAddressesToRefund.length; i++) {
+            addresses.push(jsonAddressesToRefund[i].refund_address);
+            amounts.push(vm.parseUint(jsonAddressesToRefund[i].total_eth));
         }
     }
 
     function _buildCalls() internal view virtual override returns (IMulticall3.Call3Value[] memory) {
         IMulticall3.Call3Value[] memory calls = new IMulticall3.Call3Value[](1);
 
-        address[] memory addresses = new address[](addressesToRefund.length);
-        uint256[] memory amounts = new uint256[](addressesToRefund.length);
-        for (uint256 i = 0; i < addressesToRefund.length; i = i + 1) {
-            addresses[i] = addressesToRefund[i].refund_address;
-            amounts[i] = addressesToRefund[i].total_eth;
-        }
+        bytes memory data = abi.encodeCall(Recovery.withdrawETH, (addresses, amounts));
+
+        uint256 l2CallValue = 0;
+        uint256 maxSubmissionCost = IInbox(ARBITRUM_INBOX).calculateRetryableSubmissionFee(data.length, 0);
+        uint256 gasLimit = 1_000_000;
+        uint256 maxFeePerGas = 1 gwei;
+
+        uint256 value = maxSubmissionCost + l2CallValue + (gasLimit * maxFeePerGas);
 
         calls[0] = IMulticall3.Call3Value({
-            target: ARBITRUM_L1_DELAYED_INBOX,
+            target: ARBITRUM_INBOX,
             allowFailure: false,
             callData: abi.encodeCall(
-                IInbox.sendL1FundedContractTransaction,
+                IInbox.createRetryableTicket,
                 (
-                    // gasprice were obtained using latest gas prices from public gas trackers on arbitrum.
-                    // the maxgas was then derived by asking "how much ETH are we willing to spend to refund users?"
-                    // and 0.02 ETH seemed a reasonable worst case cost.
-                    1000000000, // maxgas
-                    20000000, // gasPriceBid
-                    L2_RECOVERY_IMPLEMENTATION,
-                    abi.encodeCall(IRecovery.withdrawETH, (addresses, amounts))
+                    L2_RECOVERY_PROXY, // to
+                    l2CallValue,
+                    maxSubmissionCost,
+                    OWNER_SAFE, // excessFeeRefundAddress
+                    OWNER_SAFE, // callValueRefundAddress
+                    gasLimit,
+                    maxFeePerGas,
+                    data
                 )
             ),
-            value: 0
+            value: value
         });
 
         return calls;
