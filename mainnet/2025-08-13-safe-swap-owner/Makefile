@@ -10,7 +10,7 @@ endif
 do-sign:
 	$(GOPATH)/bin/eip712sign --ledger --hd-paths "m/44'/60'/$(LEDGER_ACCOUNT)'/0/0" -- \
 	forge script --rpc-url $(L2_RPC_URL) SwapOwner \
-	--sig "sign(address[])" []
+	--sig "sign(address[])" [] --sender 0x89EBc5EB7163470e23fCc24833eeA6BB93A7b045
 
 .PHONY: execute
 execute:

@@ -5,134 +5,123 @@ import {MultisigScript} from "@base-contracts/script/universal/MultisigScript.so
 import {Simulation} from "@base-contracts/script/universal/Simulation.sol";
 import {IMulticall3} from "forge-std/interfaces/IMulticall3.sol";
 import {IGnosisSafe} from "@base-contracts/script/universal/IGnosisSafe.sol";
+import {stdJson} from "forge-std/StdJson.sol";
 import {Vm} from "forge-std/Vm.sol";
 
+
 contract SwapOwner is MultisigScript {
+    using stdJson for string;
+
     address internal OWNER_SAFE = vm.envAddress("OWNER_SAFE");
-    address internal OLD_SIGNER_1 = vm.envAddress("OLD_SIGNER_1");
-    address internal OLD_SIGNER_2 = vm.envAddress("OLD_SIGNER_2");
-    address internal OLD_SIGNER_3 = vm.envAddress("OLD_SIGNER_3");
-    address internal OLD_SIGNER_4 = vm.envAddress("OLD_SIGNER_4");
-    address internal OLD_SIGNER_5 = vm.envAddress("OLD_SIGNER_5");
-    address internal OLD_SIGNER_6 = vm.envAddress("OLD_SIGNER_6");
-    address internal NEW_SIGNER_1 = vm.envAddress("NEW_SIGNER_1");
-    address internal NEW_SIGNER_2 = vm.envAddress("NEW_SIGNER_2");
-    address internal NEW_SIGNER_3 = vm.envAddress("NEW_SIGNER_3");
-    address internal NEW_SIGNER_4 = vm.envAddress("NEW_SIGNER_4");
-    address internal NEW_SIGNER_5 = vm.envAddress("NEW_SIGNER_5");
-    address internal NEW_SIGNER_6 = vm.envAddress("NEW_SIGNER_6");
-    address internal NEW_SIGNER_7 = vm.envAddress("NEW_SIGNER_7");
     address internal constant SENTINEL_OWNERS = address(0x1);
 
-    address[] internal safeOwners; // The list of all owners of the safe
-    uint256 currentThreshold; // The current signature threshold
+    address[] public EXISTING_OWNERS;
 
-    function setUp() public {
-        safeOwners = IGnosisSafe(OWNER_SAFE).getOwners();
-        currentThreshold = IGnosisSafe(OWNER_SAFE).getThreshold();
-        _precheck();
+    address[] public OWNERS_TO_ADD;
+    address[] public OWNERS_TO_REMOVE;
+
+    mapping(address => address) public ownerToPrevOwner;
+    mapping(address => address) public ownerToNextOwner;
+    mapping(address => bool) public expectedOwner;
+    uint256 public immutable THRESHOLD;
+
+    constructor() {
+        OWNER_SAFE = vm.envAddress("OWNER_SAFE");
+
+        IGnosisSafe ownerSafe = IGnosisSafe(OWNER_SAFE);
+        THRESHOLD = ownerSafe.getThreshold();
+        EXISTING_OWNERS = ownerSafe.getOwners();
+
+        string memory rootPath = vm.projectRoot();
+        string memory path = string.concat(rootPath, "/OwnerDiff.json");
+        string memory jsonData = vm.readFile(path);
+
+        OWNERS_TO_ADD = abi.decode(jsonData.parseRaw(".OwnersToAdd"), (address[]));
+        OWNERS_TO_REMOVE = abi.decode(jsonData.parseRaw(".OwnersToRemove"), (address[]));
     }
 
-    function _fetchPrevOwnerLinked(address owner) internal view returns (address prevOwnerLinked) {
-        // We need to locate the previous owner in the linked list of owners to properly swap out the target signer
-        for (uint256 i = 0; i < safeOwners.length; i++) {
-            if (safeOwners[i] == owner) {
-                // There is a sentinel node as the head of the linked list, so we need to handle the first owner separately
-                if (i == 0) {
-                    prevOwnerLinked = SENTINEL_OWNERS;
-                } else {
-                    prevOwnerLinked = safeOwners[i - 1];
-                }
-                break;
-            }
+    function setUp() public {
+        require(OWNERS_TO_ADD.length > 0);
+        require(OWNERS_TO_REMOVE.length > 0);
+        address prevOwner = SENTINEL_OWNERS;
+        IGnosisSafe ownerSafe = IGnosisSafe(payable(OWNER_SAFE));
+
+        for (uint256 i = OWNERS_TO_ADD.length; i > 0; i--) {
+            uint256 index = i - 1;
+            // Make sure owners to add are not already owners
+            require(!ownerSafe.isOwner(OWNERS_TO_ADD[index]), "New owner already owner");
+            // Prevent duplicates
+            require(!expectedOwner[OWNERS_TO_ADD[index]], "Duplicate owner detected");
+
+            ownerToPrevOwner[OWNERS_TO_ADD[index]] = prevOwner;
+            ownerToNextOwner[prevOwner] = OWNERS_TO_ADD[index];
+            prevOwner = OWNERS_TO_ADD[index];
+            expectedOwner[OWNERS_TO_ADD[index]] = true;
+        }
+
+        for (uint256 i; i < EXISTING_OWNERS.length; i++) {
+            ownerToPrevOwner[EXISTING_OWNERS[i]] = prevOwner;
+            ownerToNextOwner[prevOwner] = EXISTING_OWNERS[i];
+            prevOwner = EXISTING_OWNERS[i];
+            expectedOwner[EXISTING_OWNERS[i]] = true;
+        }
+
+        for (uint256 i; i < OWNERS_TO_REMOVE.length; i++) {
+            // Make sure owners to remove are owners
+            require(ownerSafe.isOwner(OWNERS_TO_REMOVE[i]), "Precheck 05");
+            // Prevent duplicates
+            require(expectedOwner[OWNERS_TO_REMOVE[i]], "Precheck 06");
+            expectedOwner[OWNERS_TO_REMOVE[i]] = false;
+
+            // Remove from linked list to keep ownerToPrevOwner up to date
+            // Note: This works as long as the order of OWNERS_TO_REMOVE does not change during `_buildCalls()`
+            address nextOwner = ownerToNextOwner[OWNERS_TO_REMOVE[i]];
+            address prevPtr = ownerToPrevOwner[OWNERS_TO_REMOVE[i]];
+            ownerToPrevOwner[nextOwner] = prevPtr;
+            ownerToNextOwner[prevPtr] = nextOwner;
         }
     }
 
-    function _precheck() internal view {
-        // Sanity checks on the current owner state of the safe
-        require(IGnosisSafe(OWNER_SAFE).isOwner(OLD_SIGNER_1), "Signer to swap is not an owner");
-        require(IGnosisSafe(OWNER_SAFE).isOwner(OLD_SIGNER_2), "Signer to swap is not an owner");
-        require(IGnosisSafe(OWNER_SAFE).isOwner(OLD_SIGNER_3), "Signer to swap is not an owner");
-        require(IGnosisSafe(OWNER_SAFE).isOwner(OLD_SIGNER_4), "Signer to swap is not an owner");
-        require(IGnosisSafe(OWNER_SAFE).isOwner(OLD_SIGNER_5), "Signer to swap is not an owner");
-        require(IGnosisSafe(OWNER_SAFE).isOwner(OLD_SIGNER_6), "Signer to swap is not an owner");
-        require(!IGnosisSafe(OWNER_SAFE).isOwner(NEW_SIGNER_1), "New signer is already an owner");
-        require(!IGnosisSafe(OWNER_SAFE).isOwner(NEW_SIGNER_2), "New signer is already an owner");
-        require(!IGnosisSafe(OWNER_SAFE).isOwner(NEW_SIGNER_3), "New signer is already an owner");
-        require(!IGnosisSafe(OWNER_SAFE).isOwner(NEW_SIGNER_4), "New signer is already an owner");
-        require(!IGnosisSafe(OWNER_SAFE).isOwner(NEW_SIGNER_5), "New signer is already an owner");
-        require(!IGnosisSafe(OWNER_SAFE).isOwner(NEW_SIGNER_6), "New signer is already an owner");
-    }
-
     function _buildCalls() internal view override returns (IMulticall3.Call3Value[] memory) {
-        IMulticall3.Call3Value[] memory calls = new IMulticall3.Call3Value[](7);
+        IMulticall3.Call3Value[] memory calls =
+            new IMulticall3.Call3Value[](OWNERS_TO_ADD.length + OWNERS_TO_REMOVE.length);
 
-        calls[0] = IMulticall3.Call3Value({
-            target: OWNER_SAFE,
-            allowFailure: false,
-            value: 0,
-            callData: abi.encodeCall(IGnosisSafe.swapOwner, (_fetchPrevOwnerLinked(OLD_SIGNER_1), OLD_SIGNER_1, NEW_SIGNER_1))
-        });
-        calls[1] = IMulticall3.Call3Value({
-            target: OWNER_SAFE,
-            allowFailure: false,
-            value: 0,
-            callData: abi.encodeCall(IGnosisSafe.swapOwner, (_fetchPrevOwnerLinked(OLD_SIGNER_2), OLD_SIGNER_2, NEW_SIGNER_2))
-        });
-        calls[2] = IMulticall3.Call3Value({
-            target: OWNER_SAFE,
-            allowFailure: false,
-            value: 0,
-            callData: abi.encodeCall(IGnosisSafe.swapOwner, (_fetchPrevOwnerLinked(OLD_SIGNER_3), OLD_SIGNER_3, NEW_SIGNER_3))
-        });
-        calls[3] = IMulticall3.Call3Value({
-            target: OWNER_SAFE,
-            allowFailure: false,
-            value: 0,
-            callData: abi.encodeCall(IGnosisSafe.swapOwner, (_fetchPrevOwnerLinked(OLD_SIGNER_4), OLD_SIGNER_4, NEW_SIGNER_4))
-        });
-        calls[4] = IMulticall3.Call3Value({
-            target: OWNER_SAFE,
-            allowFailure: false,
-            value: 0,
-            callData: abi.encodeCall(IGnosisSafe.swapOwner, (_fetchPrevOwnerLinked(OLD_SIGNER_5), OLD_SIGNER_5, NEW_SIGNER_5))
-        });
-        calls[5] = IMulticall3.Call3Value({
-            target: OWNER_SAFE,
-            allowFailure: false,
-            value: 0,
-            callData: abi.encodeCall(IGnosisSafe.swapOwner, (_fetchPrevOwnerLinked(OLD_SIGNER_6), OLD_SIGNER_6, NEW_SIGNER_6))
-        });
-        calls[5] = IMulticall3.Call3Value({
-            target: OWNER_SAFE,
-            allowFailure: false,
-            value: 0,
-            callData: abi.encodeCall(IGnosisSafe.swapOwner, (_fetchPrevOwnerLinked(OLD_SIGNER_6), OLD_SIGNER_6, NEW_SIGNER_6))
-        });
-        calls[6] = IMulticall3.Call3Value({
-            target: OWNER_SAFE,
-            allowFailure: false,
-            value: 0,
-            callData: abi.encodeCall(IGnosisSafe.addOwnerWithThreshold, (NEW_SIGNER_7, currentThreshold))
-        });
+        for (uint256 i; i < OWNERS_TO_ADD.length; i++) {
+            calls[i] = IMulticall3.Call3Value({
+                target: OWNER_SAFE,
+                allowFailure: false,
+                callData: abi.encodeCall(IGnosisSafe.addOwnerWithThreshold, (OWNERS_TO_ADD[i], THRESHOLD)),
+                value: 0
+            });
+        }
+
+        for (uint256 i; i < OWNERS_TO_REMOVE.length; i++) {
+            calls[OWNERS_TO_ADD.length + i] = IMulticall3.Call3Value({
+                target: OWNER_SAFE,
+                allowFailure: false,
+                callData: abi.encodeCall(
+                    IGnosisSafe.removeOwner, (ownerToPrevOwner[OWNERS_TO_REMOVE[i]], OWNERS_TO_REMOVE[i], THRESHOLD)
+                ),
+                value: 0
+            });
+        }
 
         return calls;
     }
 
     function _postCheck(Vm.AccountAccess[] memory, Simulation.Payload memory) internal view override {
-        require(IGnosisSafe(OWNER_SAFE).isOwner(NEW_SIGNER_1), "New signer was not added as an owner");
-        require(IGnosisSafe(OWNER_SAFE).isOwner(NEW_SIGNER_2), "New signer was not added as an owner");
-        require(IGnosisSafe(OWNER_SAFE).isOwner(NEW_SIGNER_3), "New signer was not added as an owner");
-        require(IGnosisSafe(OWNER_SAFE).isOwner(NEW_SIGNER_4), "New signer was not added as an owner");
-        require(IGnosisSafe(OWNER_SAFE).isOwner(NEW_SIGNER_5), "New signer was not added as an owner");
-        require(IGnosisSafe(OWNER_SAFE).isOwner(NEW_SIGNER_6), "New signer was not added as an owner");
-        require(IGnosisSafe(OWNER_SAFE).isOwner(NEW_SIGNER_7), "New signer was not added as an owner");
-        require(!IGnosisSafe(OWNER_SAFE).isOwner(OLD_SIGNER_1), "Old signer was not removed as an owner");
-        require(!IGnosisSafe(OWNER_SAFE).isOwner(OLD_SIGNER_2), "Old signer was not removed as an owner");
-        require(!IGnosisSafe(OWNER_SAFE).isOwner(OLD_SIGNER_3), "Old signer was not removed as an owner");
-        require(!IGnosisSafe(OWNER_SAFE).isOwner(OLD_SIGNER_4), "Old signer was not removed as an owner");
-        require(!IGnosisSafe(OWNER_SAFE).isOwner(OLD_SIGNER_5), "Old signer was not removed as an owner");
-        require(!IGnosisSafe(OWNER_SAFE).isOwner(OLD_SIGNER_6), "Old signer was not removed as an owner");
+        IGnosisSafe ownerSafe = IGnosisSafe(OWNER_SAFE);
+        address[] memory postCheckOwners = ownerSafe.getOwners();
+        uint256 postCheckThreshold = ownerSafe.getThreshold();
+
+        uint256 expectedLength = EXISTING_OWNERS.length + OWNERS_TO_ADD.length - OWNERS_TO_REMOVE.length;
+
+        require(postCheckThreshold == THRESHOLD, "Postcheck 00");
+        require(postCheckOwners.length == expectedLength, "Postcheck 01");
+
+        for (uint256 i; i < postCheckOwners.length; i++) {
+            require(expectedOwner[postCheckOwners[i]], "Postcheck 02");
+        }
     }
 
     function _ownerSafe() internal view override returns (address) {
