@@ -6,11 +6,11 @@ ifndef LEDGER_ACCOUNT
 override LEDGER_ACCOUNT = 0
 endif
 
-.PHONY: sign
-sign:
+.PHONY: do-sign
+do-sign:
 	$(GOPATH)/bin/eip712sign --ledger --hd-paths "m/44'/60'/$(LEDGER_ACCOUNT)'/0/0" -- \
 	forge script --rpc-url $(L2_RPC_URL) SwapOwner \
-	--sig "sign()"
+	--sig "sign(address[])" []
 
 .PHONY: execute
 execute:

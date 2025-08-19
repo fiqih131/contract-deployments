@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import {MultisigBuilder} from "@base-contracts/script/universal/MultisigBuilder.sol";
+import {MultisigScript} from "@base-contracts/script/universal/MultisigScript.sol";
 import {Simulation} from "@base-contracts/script/universal/Simulation.sol";
 import {IMulticall3} from "forge-std/interfaces/IMulticall3.sol";
 import {IGnosisSafe} from "@base-contracts/script/universal/IGnosisSafe.sol";
 import {Vm} from "forge-std/Vm.sol";
 
-contract SwapOwner is MultisigBuilder {
+contract SwapOwner is MultisigScript {
     address internal OWNER_SAFE = vm.envAddress("OWNER_SAFE");
     address internal OLD_SIGNER_1 = vm.envAddress("OLD_SIGNER_1");
     address internal OLD_SIGNER_2 = vm.envAddress("OLD_SIGNER_2");
