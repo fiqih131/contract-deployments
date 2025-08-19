@@ -11,9 +11,6 @@ This task contains a single script that can be used to swap an owner in a Gnosis
 ### 1. Update repo:
 
 ```bash
-cd contract-deployments
-git pull
-make setup-safe-management network=<network>
 cd <network>/<date>safe-swap-owner
 make deps
 ```
@@ -31,7 +28,7 @@ is ready".
 Make sure your ledger is still unlocked and run the following.
 
 ```bash
-make sign
+make do-sign
 ```
 
 You will see a "Simulation link" from the output.
