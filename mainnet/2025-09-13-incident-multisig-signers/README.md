@@ -1,6 +1,6 @@
 # Update Mainnet Incident Multisig Signers
 
-Status: EXECUTED (https://etherscan.io/tx/0x3afa96e86ed1898cc9cf1a8b37ac99c63754e3063aecd0910fb9e12b48b69fd8)
+Status: SIGNING
 
 ## Description
 
@@ -79,7 +79,7 @@ git clone https://github.com/base/contract-deployments.git
 ```bash
 cd contract-deployments
 git pull
-cd mainnet/2025-05-13-incident-multisig-signers
+cd mainnet/2025-09-13-incident-multisig-signers
 make deps
 ```
 
