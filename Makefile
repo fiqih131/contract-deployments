@@ -93,7 +93,7 @@ checkout-base-contracts-commit:
 	git fetch --depth=1 origin $(BASE_CONTRACTS_COMMIT); \
 	git reset --hard FETCH_HEAD
 
-SIGNER_TOOL_COMMIT=b127409104a353aeee98f862ba0ebf3f4f139976
+SIGNER_TOOL_COMMIT=5bb7db1c496de91485bb134015ff7cd8eaf64e4a
 SIGNER_TOOL_PATH=signer-tool
 
 .PHONY: checkout-signer-tool
