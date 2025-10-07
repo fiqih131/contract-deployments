@@ -93,7 +93,7 @@ checkout-base-contracts-commit:
 	git fetch --depth=1 origin $(BASE_CONTRACTS_COMMIT); \
 	git reset --hard FETCH_HEAD
 
-SIGNER_TOOL_COMMIT=5bb7db1c496de91485bb134015ff7cd8eaf64e4a
+SIGNER_TOOL_COMMIT=09831f90386eeefd4855ac7dc85ac75eeb1ce2b1
 SIGNER_TOOL_PATH=signer-tool
 
 .PHONY: checkout-signer-tool
@@ -112,6 +112,9 @@ sign:
 	cd $(SIGNER_TOOL_PATH); \
 	npm ci; \
 	bun dev
+
+.PHONY: sign-task
+sign-task: checkout-signer-tool sign
 
 ##
 # Solidity Testing

@@ -9,7 +9,7 @@
   "expected_domain_and_message_hashes": {
     "address": "0x9C4a57Feb77e294Fd7BF5EBE9AB01CAA0a90A110",
     "domain_hash": "0xfb308368b8deca582e84a807d31c1bfcec6fda754061e2801b4d6be5cb52a8ac",
-    "message_hash": "0x077527d495da00cdcaff68e92a59c7858803a3b260244e1e6264ab699b4e714c"
+    "message_hash": "0xef72f90aff9fc99cf729c1cca266075c99f84a63a5cfb5638800835e4d0eaf61"
   },
   "expected_nested_hash": "",
   "state_overrides": [
@@ -23,7 +23,7 @@
           "description": "Override the threshold to 1 so the transaction simulation can occur"
         },
         {
-          "key": "0xceb0c6d1b64a5086cc28651ff47de8964d4dc577403b28369b9f35514bc6030f",
+          "key": "0x71aee2090d035a2968be30170f913a89d0d78ecca739610bdf2dfba1dbc12b9c",
           "value": "0x0000000000000000000000000000000000000000000000000000000000000001",
           "description": "Difference is expected: different signer generate a different approval hash."
         }
@@ -37,8 +37,8 @@
       "changes": [
         {
           "key": "0x0000000000000000000000000000000000000000000000000000000000000005",
-          "before": "0x0000000000000000000000000000000000000000000000000000000000000003",
-          "after": "0x0000000000000000000000000000000000000000000000000000000000000004",
+          "before": "0x0000000000000000000000000000000000000000000000000000000000000004",
+          "after": "0x0000000000000000000000000000000000000000000000000000000000000005",
           "description": "Increments the nonce value of the Gnosis Safe"
         },
         {
