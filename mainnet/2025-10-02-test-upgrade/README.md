@@ -1,10 +1,10 @@
 # Swap Owner on Gnosis Safe
 
-Status: PENDING
+Status: READY TO SIGN
 
 ## Description
 
-This task contains a single script that can be used to swap an owner in a Gnosis Safe.
+This task contains a single **script** that can be used to swap an owner in a Gnosis Safe.
 
 ## Sign Task
 
