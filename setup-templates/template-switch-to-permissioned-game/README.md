@@ -4,7 +4,8 @@ Status: PENDING
 
 ## Description
 
-This task contains two scripts. One for deploying new versions of the `FaultDisputeGame` and `PermissionedDisputeGame` contracts, and one for updating the `DisputeGameFactory` contract to reference the new dispute game contracts.
+This task contains a single script that will update the `respectedGameType` and `retirementTimestamp` in the AnchorStateRegistry. This can only be done by the
+"Optimism Guardian Multisig" which is a single-nested multisig controlled by the OP Security Council.
 
 ## Procedure
 
@@ -13,7 +14,7 @@ This task contains two scripts. One for deploying new versions of the `FaultDisp
 ```bash
 cd contract-deployments
 git pull
-cd <network>/<date>-upgrade-fault-proofs
+cd <network>/<date>-switch-to-permissioned-game
 make deps
 ```
 
@@ -25,29 +26,9 @@ is ready".
 
 ### 3. Run relevant script(s)
 
-#### 3.1 Deploy new Dispute Game Implementations
-
-```bash
-make deploy
-```
-
-This will output the new addresses of the `FaultDisputeGame` and `PermissionedDisputeGame` contracts to an `addresses.json` file. You will need to commit this file to the repo before signers can sign.
-
-#### 3.2 Sign the transaction
-
-**If on testnet**:
-
-```bash
-make sign
-```
+#### 3.1 Sign the transaction
 
 **If on mainnet**:
-
-Coinbase signer:
-
-```bash
-make sign-cb
-```
 
 Op signer:
 
@@ -171,12 +152,6 @@ SIGNATURES=AAAABBBB make execute
 ```
 
 If on mainnet, then you should run:
-
-Coinbase facilitator:
-
-```bash
-SIGNATURES=AAAABBBB make approve-cb
-```
 
 Optimism facilitator:
 
