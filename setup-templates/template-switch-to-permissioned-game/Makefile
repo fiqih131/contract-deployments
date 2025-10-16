@@ -9,7 +9,7 @@ override LEDGER_ACCOUNT = 0
 endif
 
 RPC_URL = $(L1_RPC_URL)
-SCRIPT_NAME = UpdateRetirementTimestamp
+SCRIPT_NAME = SwitchToPermissionedGame
 
 # OP
 .PHONY: sign-op
