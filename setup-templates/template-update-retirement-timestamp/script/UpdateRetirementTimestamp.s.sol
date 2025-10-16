@@ -43,7 +43,6 @@ contract UpdateRetirementTimestamp is MultisigScript {
 
     // Checks that the current state matches the CURRENT_RETIREMENT_TIMESTAMP
     function _precheckRetirementTimestamp() internal view {
-        console.log("pre-check current retirement timestamp", CURRENT_RETIREMENT_TIMESTAMP);
         require(anchorStateRegistry.retirementTimestamp() == CURRENT_RETIREMENT_TIMESTAMP, "00");
     }
 
@@ -52,21 +51,9 @@ contract UpdateRetirementTimestamp is MultisigScript {
         require(anchorStateRegistry.retirementTimestamp() == block.timestamp, "post-110");
     }
 
-    // // Checks the anchor state for the source game type still exists after re-initialization. The actual anchor state
-    // // may have been updated since the task was defined so just assert it exists, not that it has a specific value.
-    // function _postcheckHasAnchorState(uint32 gameType) internal view {
-    //     console.log("check anchor state exists", gameType);
-
-    //     IFaultDisputeGame impl = IFaultDisputeGame(dgfProxy.gameImpls(gameType));
-    //     (bytes32 root, uint256 rootBlockNumber) = IAnchorStateRegistry(impl.anchorStateRegistry()).anchors(gameType);
-
-    //     require(root != bytes32(0), "check-300");
-    //     require(rootBlockNumber != 0, "check-310");
-    // }
 
     function _buildCalls() internal view override returns (IMulticall3.Call3Value[] memory) {
-        IMulticall3.Call3Value[] memory calls = new IMulticall3.Call3Value[](2);
-
+        IMulticall3.Call3Value[] memory calls = new IMulticall3.Call3Value[](1);
         calls[0] = IMulticall3.Call3Value({
             target: address(anchorStateRegistry),
             allowFailure: false,
