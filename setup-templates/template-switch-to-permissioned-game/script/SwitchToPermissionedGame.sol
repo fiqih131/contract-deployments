@@ -15,7 +15,7 @@ import {Simulation} from "@base-contracts/script/universal/Simulation.sol";
 
 /// @notice This script updates the FaultDisputeGame and PermissionedDisputeGame implementations in the
 ///         DisputeGameFactory contract.
-contract UpdateRetirementTimestamp is MultisigScript {
+contract SwitchToPermissionedGame is MultisigScript {
     using stdJson for string;
 
     // TODO: Confirm expected version
@@ -53,8 +53,16 @@ contract UpdateRetirementTimestamp is MultisigScript {
 
 
     function _buildCalls() internal view override returns (IMulticall3.Call3Value[] memory) {
-        IMulticall3.Call3Value[] memory calls = new IMulticall3.Call3Value[](1);
+        IMulticall3.Call3Value[] memory calls = new IMulticall3.Call3Value[](2);
+
         calls[0] = IMulticall3.Call3Value({
+            target: address(anchorStateRegistry),
+            allowFailure: false,
+            callData: abi.encodeCall(IAnchorStateRegistry.setRespectedGameType, (GameType.PERMISSIONED_CANNON)),
+            value: 0
+        });
+
+        calls[1] = IMulticall3.Call3Value({
             target: address(anchorStateRegistry),
             allowFailure: false,
             callData: abi.encodeCall(IAnchorStateRegistry.updateRetirementTimestamp, ()),
