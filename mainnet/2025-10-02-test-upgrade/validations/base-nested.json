@@ -11,7 +11,6 @@
     "domain_hash": "0xfb308368b8deca582e84a807d31c1bfcec6fda754061e2801b4d6be5cb52a8ac",
     "message_hash": "0xef72f90aff9fc99cf729c1cca266075c99f84a63a5cfb5638800835e4d0eaf61"
   },
-  "expected_nested_hash": "",
   "state_overrides": [
     {
       "name": "Base Nested Multisig",
