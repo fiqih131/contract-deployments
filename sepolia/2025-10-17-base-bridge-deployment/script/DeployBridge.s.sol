@@ -241,6 +241,8 @@ contract DeployBridge is Script {
         return vm.parseJsonBytes32({json: cfgData, key: string.concat(".", key)});
     }
 
+    /// @dev Appends `msg.sender` to the front of the salt to satisfy a requirement
+    ///      of the `ERC1967Factory.deployDeterministicAndCall()` method.
     function _salt() private view returns (bytes32) {
         bytes12 s = bytes12(keccak256(abi.encode(cfg.salt)));
         return bytes32(abi.encodePacked(msg.sender, s));
