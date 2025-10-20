@@ -2,7 +2,7 @@
 
 # contract-deployments
 
-This repo contains execution code and artifacts related to Base contract deployments, upgrades, and calls. It also includes validation tools and a signing interface that helps signers easily perform transaction signing through a user-friendly web interface. For actual contract implementations, see [base-org/contracts](https://github.com/base-org/contracts).
+This repo contains execution code and artifacts related to Base contract deployments, upgrades, and calls. For actual contract implementations, see [base-org/contracts](https://github.com/base-org/contracts).
 
 This repo is structured with each network having a high-level directory which contains subdirectories of any "tasks" (contract deployments/calls) that have happened for that network.
 
@@ -41,23 +41,24 @@ To execute a new task, run one of the following commands (depending on the type 
 - For fault proof upgrade: `make setup-upgrade-fault-proofs network=<network>`
 - For safe management tasks: `make setup-safe-management network=<network>`
 - For funding tasks: `make setup-funding network=<network>`
+- For updating the partner threshold in Base Bridge: `make setup-bridge-partner-threshold network=<network>`
+- For pausing / un-pausing Base Bridge: `make setup-bridge-pause network=<network>`
 
 Next, `cd` into the directory that was created for you and follow the steps listed below for the relevant template.
 
 > **👥 For Signers:** Please read the [Signer Guide](SIGNER.md) for step-by-step instructions on using the validation UI.
 
+Please note, you will need to manually create validation file(s) for your task as they are bespoke to each task and therefore not created automatically as a part of the templates. We use one validation Markdown file per multisig involved in the task, so if there's only one multisig involved in your task, then you can simply create a `VALIDATION.md` file at the root of your task containing the validation instructions, while if there are multiple multisigs involved in the task, then create a `validations/` sub-directory at the root of your task containing the corresponding validation Markdown files. If you need examples to work from, you can browse through similar past tasks in this repo and adapt them to your specific task. Also, please note that we have tooling to generate these files (like the `task-signer-tool`) which removes the manual aspect of creating these validation files, we will soon update these instructions to reflect how this process can be automated.
 
 ## Directory structure
 
 Each task will have a directory structure similar to the following:
 
-- **[inputs/](/inputs)** any input JSON files
-- **[records/](/records)** Foundry will autogenerate files here from running commands
-- **[script/](/script)** place to store any one-off Foundry scripts
-- **[src/](/src)** place to store any one-off smart contracts (long-lived contracts should go in [base-org/contracts](https://github.com/base-org/contracts))
+- **inputs/** any input JSON files
+- **records/** Foundry will autogenerate files here from running commands
+- **script/** place to store any one-off Foundry scripts
+- **src/** place to store any one-off smart contracts (long-lived contracts should go in [base-org/contracts](https://github.com/base-org/contracts))
 - **.env** place to store environment variables specific to this task
-
-> **📝 Note:** Before continuing with the templates below, please review the [setup guide for valid upgrade folders](DEVELOPER.md) to ensure your task is compatible with the new validation tool.
 
 ## Using the incident response template
 
@@ -93,7 +94,7 @@ This template is increasing the throughput on Base Chain.
 1. Go to the folder that was created using the `make setup-gas-increase network=<network>` step
 1. Fill in all TODOs (search for "TODO" in the folder) in the `.env` and `README` files. Tip: you can run `make deps` followed by `make sign-upgrade` to produce a Tenderly simulation which will help fill in several of the TODOs in the README (and also `make sign-rollback`).
 1. Check in the task when it's ready to sign and collect signatures from signers
-1. Once executed, check in the records files and mark the task `DONE` in the README.
+1. Once executed, check in the records files and mark the task `EXECUTED` in the README.
 
 ## Using the fault proof upgrade template
 
@@ -109,7 +110,7 @@ This template is used to upgrade the fault proof contracts. This is commonly don
 1. Build the contracts with `forge build`
 1. Remove the unneeded validations from `VALIDATION.md` and update the relevant validations accordingly
 1. Check in the task when it's ready to sign and collect signatures from signers
-1. Once executed, check in the records files and mark the task `DONE` in the README.
+1. Once executed, check in the records files and mark the task `EXECUTED` in the README.
 
 ## Using the swap owner template
 
@@ -123,7 +124,7 @@ This template is used to perform ownership management on a Gnosis Safe multisig,
 1. Build the contracts with `forge build`.
 1. Simulate the task with `make sign` and update the generic validations in `VALIDATION.md` with the real values.
 1. Check in the task when it's ready to sign and request the facilitators to collect signatures from signers.
-1. Once executed, check in the records files and mark the task `DONE` in the README.
+1. Once executed, check in the records files and mark the task `EXECUTED` in the README.
 
 ## Using the funding template
 
@@ -138,6 +139,36 @@ This template is used to fund addresses from a Gnosis Safe.
 1. Build the contracts with `forge build`.
 1. Simulate the task with `make sign` and update the generic validations in `VALIDATION.md` with the real values.
 1. Check in the task when it's ready to sign and request the facilitators to collect signatures from signers.
-1. Once executed, check in the records files and mark the task `DONE` in the README.
+1. Once executed, check in the records files and mark the task `EXECUTED` in the README.
 
+## Using the Base Bridge set partner threshold template
 
+This template is used to update the partner threshold in [Base Bridge](https://github.com/base/bridge), affecting the amount of required partner signatures to approve bridge messages.
+
+1. Ensure you have followed the instructions above in `setup`.
+1. Run `make setup-bridge-partner-threshold network=<network>` and go to the folder that was created by this command.
+1. Specify the commit of [Optimism code](https://github.com/ethereum-optimism/optimism) and [Base contracts code](https://github.com/base/contracts) you intend to use in the `.env` file.
+1. Run `make deps`.
+1. Ensure only the Sepolia or Mainnet variables are in the `.env` file depending on what network this task is for.
+1. Set the `NEW_THRESHOLD` variable in the `.env` file.
+1. Ensure the `--sender` flag in the `make gen-validation` command in the `Makefile` file is set to a signer for `OWNER_SAFE` in `.env`.
+1. Build the contracts with `forge build`.
+1. Generate the validation file for signers with `make gen-validation`.
+1. Check in the task when it's ready to sign and request the facilitators to collect signatures from signers.
+1. Once executed, check in the records files and mark the task `EXECUTED` in the README.
+
+## Using the pause Base Bridge template
+
+This template is used to pause or un-pause [Base Bridge](https://github.com/base/bridge).
+
+1. Ensure you have followed the instructions above in `setup`.
+1. Run `make setup-bridge-pause network=<network>` and go to the folder that was created by this command.
+1. Specify the commit of [Optimism code](https://github.com/ethereum-optimism/optimism) and [Base contracts code](https://github.com/base/contracts) you intend to use in the `.env` file.
+1. Run `make deps`.
+1. Ensure only the Sepolia or Mainnet variables are in the `.env` file depending on what network this task is for.
+1. Set the `IS_PAUSED` variable to `true` or `false` in the `.env` file depending on if you intend to pause or unpause the bridge.
+1. Ensure the `--sender` flag in the `make gen-validation` command in the `Makefile` file is set to a signer for `OWNER_SAFE` in `.env`.
+1. Build the contracts with `forge build`.
+1. Generate the validation file for signers with `make gen-validation`.
+1. Check in the task when it's ready to sign and request the facilitators to collect signatures from signers.
+1. Once executed, check in the records files and mark the task `EXECUTED` in the README.
