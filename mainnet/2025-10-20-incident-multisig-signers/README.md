@@ -22,7 +22,7 @@ Check if you have node installed
 node --version
 ```
 
-If you do not see a version above, install
+If you do not see a version above or if it is older than v18.18, install
 
 ```bash
 brew install node
