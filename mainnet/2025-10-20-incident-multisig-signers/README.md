@@ -28,20 +28,6 @@ If you do not see a version above, install
 brew install node
 ```
 
-### 3. Install Bun if needed
-
-Check if you have bun installed
-
-```bash
-bun --version
-```
-
-If you do not see a version above, install
-
-```bash
-brew install oven-sh/bun/bun
-```
-
 ## Sign Task
 
 ### 1. Update repo:

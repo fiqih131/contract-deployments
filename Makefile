@@ -128,7 +128,7 @@ checkout-signer-tool:
 sign:
 	cd $(SIGNER_TOOL_PATH); \
 	npm ci; \
-	bun dev
+	npm run dev
 
 .PHONY: sign-task
 sign-task: checkout-signer-tool sign
