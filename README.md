@@ -159,7 +159,7 @@ This template is used to update the partner threshold in [Base Bridge](https://g
 
 ## Using the pause Base Bridge template
 
-This template is used to pause or un-pause [Base Bridge](https://github.com/base/bridge).
+This template is used to pause or un-pause [Base Bridge](https://github.com/base/bridge)
 
 1. Ensure you have followed the instructions above in `setup`.
 1. Run `make setup-bridge-pause network=<network>` and go to the folder that was created by this command.
